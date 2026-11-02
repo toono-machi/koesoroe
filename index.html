@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f7f3eb">
+  <meta name="description" content="複数のゲーム台詞音声をまとめて音量調整。WAV・MP3対応、ブラウザだけで完結する音声一括ノーマライズツール。">
+  <title>こえそろえ | 台詞音量を、ひとそろい。</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+  <script src="vendor/jszip.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.1/lame.all.min.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <div class="site-shell">
+    <header class="site-header">
+      <div class="brand" aria-label="こえそろえ">
+        <span class="brand-icon" aria-hidden="true">
+          <svg viewBox="0 0 40 40" fill="none"><path d="M9 19v3m5-9v15m6-20v24m6-19v14m5-9v5" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/></svg>
+        </span>
+        <span class="brand-name">こえそろえ<span class="brand-dot">.</span></span>
+        <span class="brand-caption">VOICE LEVELING STUDIO</span>
+      </div>
+      <div class="header-meta"><span class="privacy-dot"></span> ローカル処理・アップロードなし <span class="header-sparkle">✳</span> <span class="header-ver">v1.0</span></div>
+    </header>
+
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero-content">
+        <div class="eyebrow"><span class="eyebrow-line"></span> FOR GAME CREATORS <span class="hero-flower">✳</span></div>
+        <h1 id="hero-title">台詞の音量、<br><em>きれいにそろえよう。</em></h1>
+        <p>キャラクターごとの声の大小を、まとめて調整。<br>ファイルを入れて、音量をそろえて、ゲームに使える形で書き出し。</p>
+        <div class="hero-notes"><span>✓ WAV / MP3 読み込み</span><span>✓ 複数ファイル一括処理</span><span>✓ その場で聴き比べ</span></div>
+      </div>
+      <div class="hero-art" aria-hidden="true">
+        <div class="art-orbit orbit-a"></div><div class="art-orbit orbit-b"></div>
+        <div class="record-ring"><div class="record-inner"><div class="record-hole"></div></div></div>
+        <div class="art-wave">
+          <span style="--h:26px"></span><span style="--h:48px"></span><span style="--h:72px"></span><span style="--h:35px"></span><span style="--h:92px"></span><span style="--h:60px"></span><span style="--h:122px"></span><span style="--h:79px"></span><span style="--h:110px"></span><span style="--h:43px"></span><span style="--h:92px"></span><span style="--h:55px"></span><span style="--h:75px"></span><span style="--h:39px"></span><span style="--h:24px"></span>
+        </div>
+        <span class="art-bubble bubble-left">♬</span><span class="art-bubble bubble-right">✧</span>
+        <span class="art-caption">A LITTLE MORE EVEN,<br>A LOT MORE LOVELY.</span>
+      </div>
+    </section>
+
+    <main class="workspace">
+      <aside class="control-panel" aria-label="音量調整と書き出し設定">
+        <div class="panel-heading"><div><span class="section-index">01 / SETTINGS</span><h2>音量を設定する</h2></div><span class="icon-sticker">♩</span></div>
+
+        <div class="setting-block setting-top">
+          <div class="setting-name"><label for="target">目標の声の音量</label><span class="tooltip-anchor" tabindex="0" title="無音部分を除いた声の平均音量（RMS）を目標にします。LUFSとは異なる測定方式です。" aria-label="声の音量についての説明">?</span></div>
+          <div class="target-number"><strong id="targetValue">-20</strong><span>dBFS <small>（有声音RMS）</small></span></div>
+          <input type="range" id="target" min="-32" max="-12" step="1" value="-20" aria-label="声の目標音量">
+          <div class="slider-mark"><span>小さめ -32</span><span>大きめ -12</span></div>
+          <p class="field-help">無音部分に影響されにくいよう、声がある区間を中心に測定します。</p>
+        </div>
+
+        <div class="setting-block">
+          <div class="setting-name"><label for="ceiling">ピーク上限</label><strong id="ceilingValue" class="small-value">-1.0 dBFS</strong></div>
+          <input type="range" id="ceiling" min="-6" max="-0.5" step="0.5" value="-1" aria-label="ピーク上限">
+          <div class="slider-mark"><span>-6.0</span><span>-0.5</span></div>
+          <p class="field-help">音割れを防ぐため、瞬間的な最大音量が上限を超えないようにします。</p>
+        </div>
+
+        <details class="advanced-options"><summary>詳細設定 <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 7 5 5 5-5"/></svg></summary>
+          <div class="advanced-inner">
+            <div class="setting-name"><label for="boost">最大増幅量</label><strong id="boostValue" class="small-value">+18 dB</strong></div>
+            <input type="range" id="boost" min="0" max="30" step="1" value="18" aria-label="最大増幅量">
+            <p class="field-help">小さい音声を無理に増幅しないための制限です。ノイズも一緒に大きくなります。</p>
+          </div>
+        </details>
+
+        <div class="panel-separator"></div>
+        <div class="panel-heading export-heading"><div><span class="section-index">02 / EXPORT</span><h2>書き出し設定</h2></div></div>
+        <div class="setting-block setting-compact">
+          <label class="field-label" for="format">ファイル形式</label>
+          <div class="choice-pair" role="group" aria-label="書き出し形式">
+            <label><input type="radio" name="format" value="wav" checked><span>WAV<small>高音質・非圧縮</small></span></label>
+            <label><input type="radio" name="format" value="mp3"><span>MP3<small>省容量</small></span></label>
+          </div>
+        </div>
+        <div class="setting-grid">
+          <div class="setting-block setting-compact"><label class="field-label" for="sampleRate">サンプルレート</label><select id="sampleRate"><option value="44100">44,100 Hz</option><option value="48000">48,000 Hz</option></select></div>
+          <div class="setting-block setting-compact" id="bitrateRow" hidden><label class="field-label" for="bitrate">MP3 ビットレート</label><select id="bitrate"><option value="128">128 kbps</option><option value="192" selected>192 kbps</option><option value="256">256 kbps</option><option value="320">320 kbps</option></select></div>
+        </div>
+        <div class="setting-block setting-compact"><label class="field-label" for="suffix">ファイル名につける文字</label><input type="text" id="suffix" value="_leveled" maxlength="40" spellcheck="false"><p class="field-help">例：voice001 → voice001_leveled.wav</p></div>
+        <button type="button" class="export-button" id="exportAll" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M4 17v3h16v-3"/></svg><span>まとめてZIPで書き出す</span><span class="export-arrow">↗</span></button>
+        <p class="export-caption">選択した設定で音声を一括変換します。各行から個別保存もできます。</p>
+        <div class="progress-box" id="progressBox" hidden><div class="progress-top"><span id="progressMessage">準備中</span><strong id="progressNumber">0%</strong></div><div class="progress-track"><div id="progressBar"></div></div></div>
+      </aside>
+
+      <section class="files-panel" aria-labelledby="filesHeading">
+        <div class="files-header"><div><span class="section-index">YOUR VOICE FILES</span><h2 id="filesHeading">音声ファイル <span id="fileCount" class="file-count">0</span></h2></div><button class="text-button" id="clearAll" disabled type="button">すべて削除 <span aria-hidden="true">×</span></button></div>
+        <div class="dropzone" id="dropzone" role="button" tabindex="0" aria-label="クリックまたはドラッグ＆ドロップでWAVやMP3を追加">
+          <input type="file" id="fileInput" accept=".wav,.mp3,audio/wav,audio/x-wav,audio/mpeg" multiple hidden>
+          <div class="drop-icon"><svg viewBox="0 0 52 52" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"><rect x="7" y="12" width="38" height="30" rx="6"/><path d="M26 20v13m-6-6 6 6 6-6M16 8h20"/></svg></div>
+          <div class="drop-copy"><strong>ここに音声をドロップ</strong><p>または <span class="drop-cta">ファイルを選ぶ</span> からまとめて追加</p><small>WAV / MP3 対応 ・ 複数選択OK ・ 何度でも追加できます</small></div>
+          <span class="drop-decoration">+</span>
+        </div>
+
+        <div class="file-toolbar"><div class="toolbar-count" id="toolbarCount">まだファイルがありません</div><div class="toolbar-legend"><span><i class="legend-raw"></i>元の音量</span><span><i class="legend-leveled"></i>調整後</span></div></div>
+        <div class="file-list" id="fileList" aria-live="polite">
+          <div class="empty-state" id="emptyState"><div class="empty-doodle" aria-hidden="true">♪ <span>〜</span> ♬</div><strong>まだ声が並んでいません。</strong><p>まずは台詞音声を読み込んでください。<br>ファイルごとの音量差を自動でチェックします。</p></div>
+        </div>
+        <div class="file-footer" id="fileFooter" hidden><div class="footer-info" id="footerInfo">0 ファイル</div><button type="button" class="add-more" id="addMore">＋ 音声を追加する</button></div>
+
+        <section class="tips-card" aria-label="使い方と注意点"><div class="tips-header"><span>✦</span><h3>ちょっとした使い方のコツ</h3></div><p>セリフ単位で分かれた音声にぴったり。<strong>声のある部分の平均音量</strong>を基準にそろえるため、台詞の前後に無音があっても測定値が大きく変わりにくい設計です。</p><p>ただし、極端に声が小さい・一瞬だけ大きい音がある場合はピーク上限が優先され、目標値まで届かないことがあります。音割れ防止のための仕様です。</p></section>
+      </section>
+    </main>
+    <footer class="site-footer"><span>こえそろえ <span class="footer-heart">♡</span> made for storytelling</span><span>音声データは外部に送信されません。ブラウザを閉じると読み込み内容は消去されます。</span></footer>
+  </div>
+  <div class="toast-region" id="toastRegion" role="status" aria-live="polite"></div>
+  <script nomodule>document.body.innerHTML = 'このアプリには最新のブラウザが必要です。';</script>
+</body>
+</html>
